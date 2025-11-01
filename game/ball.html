@@ -4,12 +4,79 @@
 <meta charset="UTF-8">
 <title>Suika Game Prototype</title>
 <style>
-  body { margin: 0; overflow: hidden; background: #222; color: white; font-family: sans-serif; }
-  #score { position: absolute; top: 10px; left: 10px; font-size: 24px; }
+    body { margin: 0; overflow: hidden; background: #222; color: white; font-family: sans-serif; }
+    #score { 
+        position: absolute; 
+        top: 10px; 
+        /* 점수 위치를 게임 캔버스 기준으로 변경 */
+        left: 50%; 
+        transform: translateX(-50%);
+        font-size: 24px; 
+        z-index: 10;
+    }
+    #gameCanvas {
+        border: 2px solid #555; /* 게임 영역을 구분하기 위한 테두리 */
+        display: block; /* 캔버스 아래 여백 제거 */
+        margin: 0 auto; /* 중앙 정렬 */
+    }
+    #nextBallDisplay {
+        position: absolute; 
+        top: 10px; 
+        right: 10px; /* 위치는 JS에서 다시 조정합니다 */
+        font-size: 20px; 
+        text-align: center;
+        background: rgba(0,0,0,0.2);
+        padding: 10px;
+        border-radius: 10px;
+    }
+    #nextBallCanvas {
+        background: rgba(255,255,255,0.1); 
+        border-radius: 50%;
+    }
+
+    /* --- 레벨 가이드 CSS --- */
+    #levelGuide {
+        position: absolute;
+        top: 50%;
+        left: 50px; /* 위치는 JS에서 다시 조정합니다 */
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column; /* 세로로 쌓기 */
+        align-items: center;
+        background: rgba(0,0,0,0.2);
+        padding: 10px;
+        border-radius: 10px;
+        color: white;
+        font-family: sans-serif;
+    }
+    .guide-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .guide-ball {
+        border-radius: 50%;
+        border: 1px solid #fff;
+        margin-right: 8px;
+    }
+    .guide-arrow {
+        font-size: 16px;
+        color: #ccc;
+        margin-top: -5px; /* 화살표가 공 사이에 오도록 */
+        margin-bottom: -5px;
+    }
 </style>
 </head>
 <body>
+
+<!-- [수정] UI 요소 순서 정리 -->
+<div id="levelGuide"></div>
 <div id="score">점수: 0</div>
+<div id="nextBallDisplay">
+    다음 공: <br>
+    <canvas id="nextBallCanvas" width="50" height="50"></canvas>
+</div>
+
 <canvas id="gameCanvas"></canvas>
 
 <!-- Matter.js CDN -->
