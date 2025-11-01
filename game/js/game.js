@@ -1,4 +1,4 @@
-const { Engine, Render, Runner, World, Bodies, Events } = Matter;
+const { Engine, Render, Runner, World, Bodies, Events, Body } = Matter;
 
 // 엔진 및 월드 생성
 const engine = Engine.create();
@@ -42,8 +42,11 @@ function randomColor() {
 }
 
 // 새로운 과일 생성
-function createFruit(x, y, radius) {
-    const fruit = Bodies.circle(x, y, radius, {
+// fromTop: true → 화면 상단에서 떨어짐, false → 현재 위치에서 생성
+function createFruit(x, y, radius = 30, fromTop = true) {
+    const startX = x;
+    const startY = fromTop ? -50 : y;  
+    const fruit = Bodies.circle(startX, startY, radius, {
         restitution: 0.5,
         friction: 0.1,
         render: { fillStyle: randomColor() }
@@ -51,30 +54,50 @@ function createFruit(x, y, radius) {
     fruit.radius = radius;
     World.add(world, fruit);
     fruits.push(fruit);
+
+    if (fromTop) {
+        Body.setVelocity(fruit, { x: 0, y: 10 });
+    }
 }
 
-// 충돌 시 합치기 처리
+// 충돌 시 합치기 처리 (같은 색끼리만)
 Events.on(engine, 'collisionStart', function(event) {
     const pairs = event.pairs;
     pairs.forEach(pair => {
         const { bodyA, bodyB } = pair;
+
+        // 두 개 모두 원형일 때
         if (bodyA.label === 'Circle Body' && bodyB.label === 'Circle Body') {
+            
+            // 같은 색인지 확인
+            if (bodyA.render.fillStyle !== bodyB.render.fillStyle) return; // 색이 다르면 합치지 않음
+
+            // 같은 색이면 합치기
             const newRadius = Math.sqrt(bodyA.radius**2 + bodyB.radius**2);
-            createFruit((bodyA.position.x + bodyB.position.x)/2, (bodyA.position.y + bodyB.position.y)/2, newRadius);
+            createFruit(
+                (bodyA.position.x + bodyB.position.x)/2,
+                (bodyA.position.y + bodyB.position.y)/2,
+                newRadius,
+                false  // false → 현재 위치에서 생성
+            );
             World.remove(world, bodyA);
             World.remove(world, bodyB);
             fruits = fruits.filter(f => f !== bodyA && f !== bodyB);
+
+            // 점수 증가
             score += Math.floor(newRadius);
             scoreDiv.innerText = `점수: ${score}`;
         }
     });
 });
 
-// 과일 주기적으로 떨어뜨리기
-setInterval(() => {
-    const x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
-    createFruit(x, -50, 20 + Math.random() * 20);
-}, 1000);
+// 마우스 클릭 시 과일 생성 (위에서 떨어짐)
+canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    createFruit(x, y, 20 + Math.random() * 20, true); // true → 위에서 떨어지도록
+});
 
 // 화면 리사이즈 대응
 window.addEventListener('resize', () => {
