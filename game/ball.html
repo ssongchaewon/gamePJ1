@@ -2,112 +2,19 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Suika Game (Prototype)</title>
+<title>Suika Game Prototype</title>
 <style>
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background: linear-gradient(180deg, #b3e5fc, #e1f5fe);
-    font-family: 'Pretendard', sans-serif;
-  }
-  canvas {
-    background: #fffbea;
-    border: 4px solid #333;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  }
+  body { margin: 0; overflow: hidden; background: #222; color: white; font-family: sans-serif; }
+  #score { position: absolute; top: 10px; left: 10px; font-size: 24px; }
 </style>
 </head>
 <body>
-<canvas id="game" width="600" height="900"></canvas>
+<div id="score">점수: 0</div>
+<canvas id="gameCanvas"></canvas>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-<script>
-const { Engine, Render, World, Bodies, Body, Events, Mouse, MouseConstraint } = Matter;
-
-// 기본 엔진
-const engine = Engine.create();
-const world = engine.world;
-
-// 렌더러
-const render = Render.create({
-  canvas: document.getElementById('game'),
-  engine,
-  options: {
-    width: 600,
-    height: 900,
-    wireframes: false,
-    background: '#fffbea'
-  }
-});
-
-Render.run(render);
-Engine.run(engine);
-
-// 벽
-const ground = Bodies.rectangle(300, 890, 600, 20, { isStatic: true });
-const leftWall = Bodies.rectangle(10, 450, 20, 900, { isStatic: true });
-const rightWall = Bodies.rectangle(590, 450, 20, 900, { isStatic: true });
-World.add(world, [ground, leftWall, rightWall]);
-
-// 과일 크기와 색
-const fruitSizes = [20, 30, 45, 60, 80];
-const colors = ['#ff6666','#ffa500','#ffcc00','#66cc66','#00aaff'];
-
-let currentFruit = null;
-
-document.addEventListener('mousemove', e => {
-  const rect = render.canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  if(currentFruit) Body.setPosition(currentFruit, { x, y: 60 });
-});
-
-document.addEventListener('click', () => {
-  if(!currentFruit) return;
-  currentFruit.isStatic = false;
-  currentFruit = createFruit(); // 다음 과일 미리 준비
-});
-
-// 과일 생성 함수
-function createFruit(sizeIndex = 0, x = 300, y = 60) {
-  const r = fruitSizes[sizeIndex];
-  const fruit = Bodies.circle(x, y, r, {
-    restitution: 0.4,
-    friction: 0.005,
-    render: { fillStyle: colors[sizeIndex] },
-    isStatic: true
-  });
-  fruit.sizeIndex = sizeIndex;
-  World.add(world, fruit);
-  return fruit;
-}
-
-// 초기 과일 생성
-currentFruit = createFruit(0);
-
-// 충돌 감지 (합체)
-Events.on(engine, 'collisionStart', e => {
-  e.pairs.forEach(pair => {
-    const a = pair.bodyA, b = pair.bodyB;
-    if(a.sizeIndex !== undefined && a.sizeIndex === b.sizeIndex) {
-      const x = (a.position.x + b.position.x)/2;
-      const y = (a.position.y + b.position.y)/2;
-      const newSize = Math.min(a.sizeIndex + 1, fruitSizes.length - 1);
-      World.remove(world, [a,b]);
-      const merged = createFruit(newSize, x, y);
-      merged.isStatic = false;
-      Body.setVelocity(merged, { x: 0, y: -2 });
-    }
-  });
-});
-
-// 마우스 드래그 (디버그용)
-const mouse = Mouse.create(render.canvas);
-const mouseConstraint = MouseConstraint.create(engine, { mouse, constraint: { stiffness: 0.1 } });
-World.add(world, mouseConstraint);
-</script>
+<!-- Matter.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+<!-- 게임 로직 -->
+<script src="js/game.js"></script>
 </body>
 </html>
