@@ -5,83 +5,165 @@
 <title>Suika Game Prototype</title>
 <style>
     body { margin: 0; overflow: hidden; background: #222; color: white; font-family: sans-serif; }
-    #score { 
-        position: absolute; 
-        top: 10px; 
-        /* 점수 위치를 게임 캔버스 기준으로 변경 */
-        left: 50%; 
-        transform: translateX(-50%);
-        font-size: 24px; 
+    
+    /* --- 메인 메뉴 --- */
+    #mainMenu {
+        position: absolute; width: 100%; height: 100%;
+        display: flex; flex-direction: column;
+        justify-content: center; align-items: center;
+        background: #333; z-index: 200;
+    }
+    #mainMenu h1 { font-size: 6vw; color: #FFD700; margin-bottom: 40px; }
+    .menu-button {
+        font-size: 24px; padding: 15px 30px; border: none;
+        border-radius: 10px; cursor: pointer;
+        background: #FFD700; color: #333; font-weight: bold;
+        transition: transform 0.2s;
+        margin-bottom: 20px; width: 200px; text-align: center;
+    }
+    .menu-button:hover { transform: scale(1.05); }
+
+    /* --- 좌/우 사이드 패널 --- */
+    #leftPanel, #rightPanel {
+        position: absolute;
+        width: 180px; /* 패널 너비 고정 */
+        top: 20px;
+        display: none; /* 게임 시작 시 JS로 flex 처리 */
+        flex-direction: column;
+        gap: 20px; /* 패널 내부 요소간 간격 */
         z-index: 10;
     }
-    #gameCanvas {
-        border: 2px solid #555; /* 게임 영역을 구분하기 위한 테두리 */
-        display: block; /* 캔버스 아래 여백 제거 */
-        margin: 0 auto; /* 중앙 정렬 */
+
+    /* --- 패널 내부 공통 스타일 --- */
+    .panel-box {
+        background: rgba(0,0,0,0.2);
+        padding: 10px 15px;
+        border-radius: 10px;
+        color: white;
     }
+    .panel-box h3 {
+        margin: 0 0 10px 0;
+        color: #FFD700;
+        border-bottom: 1px solid #555;
+        padding-bottom: 5px;
+    }
+
+    /* '게임 방법' (왼쪽 패널) */
+    #howToPlay p {
+        margin: 5px 0 0 0;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    /* '최고 점수' (오른쪽 패널) */
+    #highScoreDisplay {
+        font-size: 32px;
+        text-align: center;
+        color: #FFD700;
+        margin: 10px 0;
+    }
+
+    /* '다음 공' (오른쪽 패널) */
     #nextBallDisplay {
-        position: absolute; 
-        top: 10px; 
-        right: 10px; /* 위치는 JS에서 다시 조정합니다 */
         font-size: 20px; 
         text-align: center;
-        background: rgba(0,0,0,0.2);
-        padding: 10px;
-        border-radius: 10px;
     }
     #nextBallCanvas {
         background: rgba(255,255,255,0.1); 
         border-radius: 50%;
+        margin-top: 10px;
     }
 
-    /* --- 레벨 가이드 CSS --- */
-    #levelGuide {
-        position: absolute;
-        top: 50%;
-        left: 50px; /* 위치는 JS에서 다시 조정합니다 */
-        transform: translateY(-50%);
-        display: flex;
-        flex-direction: column; /* 세로로 쌓기 */
-        align-items: center;
-        background: rgba(0,0,0,0.2);
-        padding: 10px;
-        border-radius: 10px;
-        color: white;
-        font-family: sans-serif;
+    /* '레벨 가이드' (왼쪽 패널) */
+    .guide-item { display: flex; align-items: center; margin-bottom: 5px; }
+    .guide-ball { border-radius: 50%; border: 1px solid #fff; margin-right: 8px; }
+    .guide-arrow { font-size: 16px; color: #ccc; margin-top: -5px; margin-bottom: -5px; text-align: center;}
+
+
+    /* --- 게임 UI 요소들 (평소엔 숨김) --- */
+    #score { 
+        position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+        font-size: 24px; z-index: 10; display: none; 
     }
-    .guide-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 5px;
+    #gameCanvas {
+        border: 2px solid #555; display: none; margin: 0 auto;
     }
-    .guide-ball {
-        border-radius: 50%;
-        border: 1px solid #fff;
-        margin-right: 8px;
+    
+    /* --- 게임 오버 화면 --- */
+    #gameOverScreen {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.75); color: white;
+        padding: 30px 50px; border-radius: 15px;
+        display: none; flex-direction: column;
+        align-items: center; z-index: 100;
     }
-    .guide-arrow {
+    #gameOverScreen h1 { margin: 0 0 15px 0; }
+    #restartButton {
+        font-size: 20px; padding: 10px 20px; border: none;
+        border-radius: 5px; cursor: pointer;
+        background: #FFD700; color: #333; font-weight: bold;
+    }
+
+    /* --- [추가] 그만하기 버튼 스타일 --- */
+    #quitButton {
         font-size: 16px;
-        color: #ccc;
-        margin-top: -5px; /* 화살표가 공 사이에 오도록 */
-        margin-bottom: -5px;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #FF6347; /* 토마토색 */
+        color: white;
+        font-weight: bold;
+        width: 100%; 
+        box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+        margin-top: 15px; /* 위쪽 박스와 간격 둠 */
+    }
+    #quitButton:hover {
+        background-color: #E0523A;
     }
 </style>
 </head>
 <body>
 
-<!-- [수정] UI 요소 순서 정리 -->
-<div id="levelGuide"></div>
-<div id="score">점수: 0</div>
-<div id="nextBallDisplay">
-    다음 공: <br>
-    <canvas id="nextBallCanvas" width="50" height="50"></canvas>
+<div id="mainMenu">
+    <h1>수박 게임</h1>
+    <button id="startButton" class="menu-button">게임 시작</button>
 </div>
 
+<div id="leftPanel">
+    <div id="levelGuide" class="panel-box">
+        <h3>레벨 가이드</h3>
+        </div>
+    <div id="howToPlay" class="panel-box">
+        <h3>게임 방법</h3>
+        <p>1. 마우스로 위치를 정하고 클릭!</p>
+        <p>2. 같은 공이 만나면 합체!</p>
+        <p>3. 빨간 선을 넘으면 게임 오버!</p>
+    </div>
+</div>
+
+<div id="rightPanel">
+    <div id="nextBallDisplay" class="panel-box">
+        <h3>다음 공</h3>
+        <canvas id="nextBallCanvas" width="50" height="50"></canvas>
+    </div>
+    <div id="highScorePanel" class="panel-box">
+        <h3>최고 점수</h3>
+        <p id="highScoreDisplay">0</p>
+    </div>
+
+    <button id="quitButton">그만하기</button>
+</div>
+
+
+<div id="gameOverScreen">
+    <h1>Game Over</h1>
+    <button id="restartButton">다시 시작</button>
+</div>
+<div id="score">점수: 0</div>
 <canvas id="gameCanvas"></canvas>
 
-<!-- Matter.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
-<!-- 게임 로직 -->
-<script src="js/game.js"></script>
+<script src="js/game.js"></script> 
 </body>
 </html>
