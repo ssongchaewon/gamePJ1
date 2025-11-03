@@ -98,7 +98,7 @@ function initializeGame() {
             width: gameWidth,
             height: gameHeight,
             wireframes: false,
-            background: '#333'
+            background: '#F0F8FF'
         }
     });
 
