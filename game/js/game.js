@@ -10,6 +10,11 @@ const highScoreDisplay = document.getElementById('highScoreDisplay');
 
 // --- 2. 메인 메뉴 이벤트 리스너 ---
 
+// 게임 시작 사운드 로드
+const gameStartSound = new Audio('./sound/GameStart.mp3');
+gameStartSound.preload = 'auto';
+gameStartSound.volume = 0.9;
+
 // '게임 시작' 버튼
 startButton.addEventListener('click', () => {
     mainMenu.style.display = 'none'; // 메뉴 숨기기
@@ -19,6 +24,8 @@ startButton.addEventListener('click', () => {
         bgm.play().catch(e => console.error("BGM 재생 오류:", e));
     }
 
+    // 게임 시작 사운드 재생
+    try { gameStartSound.currentTime = 0; gameStartSound.play().catch(()=>{}); } catch(e){ /* ignore play errors */ }
 
     initializeGame(); // 게임 시작!
 });
@@ -65,10 +72,11 @@ function initializeGame() {
         Events = Matter.Events,
         Body = Matter.Body;
 
-    // 게임 설정
-    const GAME_WIDTH_RATIO = 1 / 3;
-    let gameWidth = window.innerWidth * GAME_WIDTH_RATIO;
-    const gameHeight = window.innerHeight;
+    // 게임 설정 - 캔버스 및 물리 영역을 고정 크기(500x700)로 고정
+    const CANVAS_WIDTH = 500;
+    const CANVAS_HEIGHT = 700;
+    let gameWidth = CANVAS_WIDTH;      // 고정 너비
+    const gameHeight = CANVAS_HEIGHT;  // 고정 높이
     const wallThickness = 10; 
 
     let score = 0;
@@ -77,22 +85,41 @@ function initializeGame() {
     const gameOverLineY = 150;
     let isGameOver = false; 
 
-    // [수정] ballTypes 배열에 imgPath (이미지 경로) 속성 추가
-    // 'ball/...' 경로는 실제 이미지 파일 위치에 맞게 수정
     const ballTypes = [
-        { radius: 15,  imgPath: 'ball/탁구공.png',   color: '#FFDDC1' }, // Lv 1
-        { radius: 30,  imgPath: 'ball/골프공.png',       color: '#FFD700' }, // Lv 2
-        { radius: 40,  imgPath: 'ball/야구공.png',       color: '#ADFF2F' }, // Lv 3
-        { radius: 55,  imgPath: 'ball/당구공.png',     color: '#40E0D0' }, // Lv 4
-        { radius: 70,  imgPath: 'ball/테니스공.png',     color: '#6A5ACD' }, // Lv 5
-        { radius: 80,  imgPath: 'ball/볼링공.png',   color: '#FF6347' }, // Lv 6
-        { radius: 90,  imgPath: 'ball/풋살공.png',   color: '#DA70D6' }, // Lv 7
-        { radius: 100, imgPath: 'ball/배구공.png', color: '#FFA500' }, // Lv 8
-        { radius: 150, imgPath: 'ball/축구공.png',     color: '#8A2BE2' }, // Lv 9
-        { radius: 200, imgPath: 'ball/농구공.png',     color: '#DC143C' }, // Lv 10
+        { radius: 15,  imgPath: 'image/Bubble.png',   color: '#FFDDC1' }, // Lv 1
+        { radius: 30,  imgPath: 'image/SeaUrchin.png',       color: '#FFD700' }, // Lv 2
+        { radius: 40,  imgPath: 'image/StarFish.png',       color: '#FFA500' }, // Lv 3
+        { radius: 55,  imgPath: 'image/ShellFish.png',     color: '#40E0D0' }, // Lv 4
+        { radius: 70,  imgPath: 'image/JellyFish.png',     color: '#DA70D6' }, // Lv 5
+        { radius: 80,  imgPath: 'image/Nemo.png',   color: '#FF6347' }, // Lv 6
+        { radius: 90,  imgPath: 'image/Shrimp.png',   color: '#DC143C' }, // Lv 7
+        { radius: 100, imgPath: 'image/Turtle.png', color: '#ADFF2F' }, // Lv 8
+        { radius: 120, imgPath: 'image/Octopus.png',     color: '#8A2BE2' }, // Lv 9
+        { radius: 140, imgPath: 'image/Whale.png',     color: '#6A5ACD' }, // Lv 10
     ];
+    
+    function drawNextBallPreview(type) {
+        nextBallCtx.clearRect(0, 0, nextBallCanvas.width, nextBallCanvas.height);
 
-    // [새로 추가됨] 이미지 객체 미리 로드하기
+        const cx = nextBallCanvas.width / 2;
+        const cy = nextBallCanvas.height / 2;
+
+        const IMG = 80;
+        const borderRadius = Math.min(nextBallCanvas.width, nextBallCanvas.height) * 0.45;
+
+        if (type.image && type.imageLoaded) {
+            nextBallCtx.drawImage(type.image, cx - IMG / 2, cy - IMG / 2, IMG, IMG);
+        } else {
+            // 로드되지 않았으면 단색 원으로 대체
+            const r = Math.min(IMG / 2, borderRadius);
+            nextBallCtx.fillStyle = type.color;
+            nextBallCtx.beginPath();
+            nextBallCtx.arc(cx, cy, r, 0, Math.PI * 2);
+            nextBallCtx.fill();
+        }
+
+    }
+    // 이미지 객체 미리 로드하기
     ballTypes.forEach(type => {
         if (type.imgPath) {
             type.image = new Image(); // type 객체에 .image 속성 추가
@@ -128,6 +155,8 @@ function initializeGame() {
 
     const nextBallCanvas = document.getElementById('nextBallCanvas');
     const nextBallCtx = nextBallCanvas.getContext('2d');
+    nextBallCanvas.width = 80;
+    nextBallCanvas.height = 80;
 
     // --- 벽, 바닥, 게임오버 라인 생성 ---
     const ground = Bodies.rectangle(gameWidth / 2, gameHeight - wallThickness / 2, gameWidth, wallThickness, { isStatic: true, label: 'wall', render: { fillStyle: '#666' } });
@@ -142,9 +171,18 @@ function initializeGame() {
 
     Composite.add(world, [ground, leftWall, rightWall, gameOverLine]); 
 
+    // 게임오버 효과음 로드
+    const gameOverSound = new Audio('./sound/GameOver.mp3');
+    gameOverSound.preload = 'auto';
+    gameOverSound.volume = 0.9;
+
     function gameOver() {
         if (isGameOver) return; // 중복 실행 방지
         isGameOver = true;
+
+        // 게임오버 사운드 재생 (브라우저 정책으로 실패할 수 있으므로 try/catch)
+        try { gameOverSound.currentTime = 0; gameOverSound.play(); } catch (e) { /* ignore play errors */ }
+
         Runner.stop(runner); // 엔진 정지
         
         saveHighScore(score); // 게임 오버 시 최고 점수 저장 시도
@@ -182,7 +220,9 @@ function initializeGame() {
         // 이미지 로드 여부 확인
         if (type.image && type.imageLoaded) {
             // 이미지가 로드되었으면 이미지 그리기
-            ctx.drawImage(type.image, -radius, -radius, radius * 2, radius * 2);
+                const scale = 0.925; 
+                const drawRadius = radius / scale;
+            ctx.drawImage(type.image, -drawRadius, -drawRadius, drawRadius * 2, drawRadius * 2);
         } else {
             // 이미지가 없거나 로드 중/실패 시 기존 'color'로 채우기 (비상용)
             ctx.fillStyle = type.color;
@@ -239,7 +279,9 @@ function initializeGame() {
         if (currentDroppingBall && !isGameOver) {
             const type = currentBallType;
             const pos = currentDroppingBall.position;
-            const radius = type.radius; 
+            const radius = type.radius;
+            const scale = 0.925;
+            const drawRadius = radius / scale;
             
             ctx.globalAlpha = currentDroppingBall.render.opacity; // 투명도 적용
             
@@ -252,7 +294,7 @@ function initializeGame() {
             ctx.clip(); 
 
             if (type.image && type.imageLoaded) {
-                ctx.drawImage(type.image, -radius, -radius, radius * 2, radius * 2);
+                ctx.drawImage(type.image, -drawRadius, -drawRadius, drawRadius * 2, drawRadius * 2);
             } else {
                 ctx.fillStyle = type.color;
                 ctx.fill();
@@ -289,32 +331,29 @@ function initializeGame() {
     // [수정] drawNextBallPreview 함수
     function drawNextBallPreview(type) {
         nextBallCtx.clearRect(0, 0, nextBallCanvas.width, nextBallCanvas.height);
-        
-        // 크기 비율 계산 (가장 큰 공 기준 50px)
-        const scaledRadius = type.radius * (50 / (ballTypes[ballTypes.length - 1].radius * 1.5));
-        const centerX = nextBallCanvas.width / 2;
-        const centerY = nextBallCanvas.height / 2;
-        
-        // 여기도 클리핑 적용
-        nextBallCtx.save();
-        nextBallCtx.beginPath();
-        nextBallCtx.arc(centerX, centerY, scaledRadius, 0, 2 * Math.PI);
-        nextBallCtx.clip(); // 클리핑
+
+        const cx = nextBallCanvas.width / 2;
+        const cy = nextBallCanvas.height / 2;
+
+        const IMG_W = 30;
+        const IMG_H = 30;
+        const borderRadius = Math.min(nextBallCanvas.width, nextBallCanvas.height) * 0.45;
 
         if (type.image && type.imageLoaded) {
-            // 이미지가 있으면 이미지 그리기
-            nextBallCtx.drawImage(type.image, centerX - scaledRadius, centerY - scaledRadius, scaledRadius * 2, scaledRadius * 2);
+            // 원형 마스크 제거 — 항상 고정 크기(30x30)로 중앙에 그림
+            nextBallCtx.drawImage(type.image, cx - IMG_W / 2, cy - IMG_H / 2, IMG_W, IMG_H);
         } else {
-            // 없으면 기존 색상
+            // 로드되지 않았으면 단색 원으로 대체
+            const r = Math.min(IMG_W / 2, borderRadius);
             nextBallCtx.fillStyle = type.color;
+            nextBallCtx.beginPath();
+            nextBallCtx.arc(cx, cy, r, 0, Math.PI * 2);
             nextBallCtx.fill();
         }
-        
-        nextBallCtx.restore(); // 클리핑 해제
 
-        // 테두리 그리기 (클리핑 해제 후에)
+        // 항상 테두리 그리기 (일관된 크기)
         nextBallCtx.beginPath();
-        nextBallCtx.arc(centerX, centerY, scaledRadius, 0, 2 * Math.PI);
+        nextBallCtx.arc(cx, cy, borderRadius, 0, Math.PI * 2);
         nextBallCtx.strokeStyle = 'white';
         nextBallCtx.lineWidth = 1;
         nextBallCtx.stroke();
@@ -335,38 +374,70 @@ function initializeGame() {
 
     // --- 게임 플레이 이벤트 리스너 (마우스, 클릭) ---
     
+    let isMouseActive = false;   // 마우스가 캔버스 안에 있을 때만 preview가 따라다님
+    let inputLocked = false;     // 클릭 쿨다운(연속클릭 방지)
+
     const mouseMoveListener = (event) => {
-        if (isGameOver) return; 
+        if (isGameOver || !isMouseActive) return; // 캔버스 밖이면 무시
         const rect = render.canvas.getBoundingClientRect();
         let mouseX = event.clientX - rect.left;
+        // 캔버스 내부 좌표로 변환 후 preview가 캔버스/벽 밖으로 나가지 않도록 클램프
         mouseX = Math.max(currentBallType.radius + wallThickness, Math.min(gameWidth - currentBallType.radius - wallThickness, mouseX));
         Body.setPosition(currentDroppingBall, { x: mouseX, y: currentBallType.radius + 5 });
     };
 
+    // 캔버스에 들어왔을 때 마우스 인식 시작, 나가면 스냅하여 끝자락에 위치
+    render.canvas.addEventListener('mouseenter', () => {
+        isMouseActive = true;
+    });
+    render.canvas.addEventListener('mouseleave', () => {
+        isMouseActive = false;
+        // 캔버스 밖으로 나가면 물리 범위 끝자락(내부 한계)으로 스냅
+        const snapX = Math.max(currentBallType.radius + wallThickness, Math.min(gameWidth - currentBallType.radius - wallThickness, currentDroppingBall.position.x));
+        Body.setPosition(currentDroppingBall, { x: snapX, y: currentBallType.radius + 5 });
+    });
+
     const clickListener = (event) => {
-        if (isGameOver) return; 
+        if (isGameOver || inputLocked) return; // 게임오버 또는 쿨다운 중엔 무시
+
         const rect = render.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const leftBound = wallThickness + currentBallType.radius; 
-        const rightBound = gameWidth - wallThickness - currentBallType.radius; 
-        if (mouseX < leftBound || mouseX > rightBound) return;
-        
-        // 클릭 시, 미리보기 공을 물리 객체로 전환
+        const mouseXscreen = event.clientX - rect.left;
+        // 캔버스 밖 클릭은 무시
+        if (mouseXscreen < 0 || mouseXscreen > gameWidth) return;
+
+        // 생성 X는 preview 위치를 사용하되 물리 범위 내로 클램프
+        const leftBound = wallThickness + currentBallType.radius;
+        const rightBound = gameWidth - wallThickness - currentBallType.radius;
+        let spawnX = currentDroppingBall.position.x;
+        spawnX = Math.max(leftBound, Math.min(rightBound, spawnX));
+
+        // 클릭 잠금(연속 클릭 방지)
+        inputLocked = true;
+        setTimeout(() => { inputLocked = false; }, 1000); // 1000ms 쿨다운
+
+        // 미리보기 공을 실제 공으로 전환하여 생성
         const ballTypeToDrop = currentBallType;
-        const droppedBall = createBall(currentDroppingBall.position.x, currentDroppingBall.position.y, ballTypeToDrop);
+        const droppedBall = createBall(spawnX, currentDroppingBall.position.y, ballTypeToDrop);
         Composite.add(world, droppedBall);
-        
-        // 다음 공 준비
+
+        // 다음/현재 공 갱신: 다음 공은 항상 중앙에서 스폰하도록 preview 위치 리셋
         currentBallType = nextBallType;
         nextBallType = getRandomBallType();
-        updatePreviewBall(currentBallType); // 미리보기 공 업데이트
-        drawNextBallPreview(nextBallType); // '다음 공' UI 업데이트
+        updatePreviewBall(currentBallType);
+        Body.setPosition(currentDroppingBall, { x: gameWidth / 2, y: currentBallType.radius + 5 });
+        drawNextBallPreview(nextBallType);
     };
 
-    render.canvas.addEventListener('mousemove', mouseMoveListener); // [수정] document -> render.canvas
-    render.canvas.addEventListener('click', clickListener); // [수정] document -> render.canvas
+    // 이벤트 리스너 등록 (캔버스 기준)
+    render.canvas.addEventListener('mousemove', mouseMoveListener);
+    render.canvas.addEventListener('click', clickListener);
 
     // --- Matter.js 충돌 이벤트 ---
+
+    // 합체 효과음 로드
+    const mergeSound = new Audio('./sound/EffectSound.mp3');
+    mergeSound.preload = 'auto';
+    mergeSound.volume = 0.9;
 
     Events.on(engine, 'collisionStart', (event) => {
         if (isGameOver) return; 
@@ -378,6 +449,9 @@ function initializeGame() {
                 
                 const currentIndex = bodyA.ballTypeIndex;
                 
+                // 사운드 재생
+                try { mergeSound.currentTime = 0; mergeSound.play(); } catch (e) { /* ignore play errors */ }
+
                 // [수정] 충돌 즉시 제거 (병합 랙 방지)
                 Composite.remove(world, bodyA);
                 Composite.remove(world, bodyB);
@@ -440,47 +514,39 @@ function initializeGame() {
     // --- 창 크기 조절 및 가이드 ---
 
     function resizeGame() {
-        gameWidth = window.innerWidth * GAME_WIDTH_RATIO;
-        render.canvas.width = gameWidth;
-        render.canvas.height = gameHeight;
-        render.options.width = gameWidth;
-        render.options.height = gameHeight;
-        render.bounds.max.x = gameWidth;
-        render.bounds.max.y = gameHeight;
+        // 고정 크기 유지: 캔버스 크기를 항상 CANVAS_WIDTH x CANVAS_HEIGHT로 설정
+        gameWidth = CANVAS_WIDTH;
+        render.canvas.width = CANVAS_WIDTH;
+        render.canvas.height = CANVAS_HEIGHT;
+        render.options.width = CANVAS_WIDTH;
+        render.options.height = CANVAS_HEIGHT;
+        render.bounds.max.x = CANVAS_WIDTH;
+        render.bounds.max.y = CANVAS_HEIGHT;
         
-        Body.setPosition(ground, { x: gameWidth / 2, y: gameHeight - wallThickness / 2 });
+        // 벽(직사각형) 위치/정점 재설정 (고정 크기에 맞춤)
+        Body.setPosition(ground, { x: CANVAS_WIDTH / 2, y: CANVAS_HEIGHT - wallThickness / 2 });
         Body.setVertices(ground, [
-            { x: 0, y: gameHeight - wallThickness },
-            { x: gameWidth, y: gameHeight - wallThickness },
-            { x: gameWidth, y: gameHeight },
-            { x: 0, y: gameHeight }
+            { x: 0, y: CANVAS_HEIGHT - wallThickness },
+            { x: CANVAS_WIDTH, y: CANVAS_HEIGHT - wallThickness },
+            { x: CANVAS_WIDTH, y: CANVAS_HEIGHT },
+            { x: 0, y: CANVAS_HEIGHT }
         ]);
-        Body.setPosition(leftWall, { x: wallThickness / 2, y: gameHeight / 2 });
-        Body.setPosition(rightWall, { x: gameWidth - wallThickness / 2, y: gameHeight / 2 });
-        Body.setPosition(gameOverLine, { x: gameWidth / 2, y: gameOverLineY });
+        Body.setPosition(leftWall, { x: wallThickness / 2, y: CANVAS_HEIGHT / 2 });
+        Body.setPosition(rightWall, { x: CANVAS_WIDTH - wallThickness / 2, y: CANVAS_HEIGHT / 2 });
+        Body.setPosition(gameOverLine, { x: CANVAS_WIDTH / 2, y: gameOverLineY });
         Body.setVertices(gameOverLine, [
             { x: 0, y: gameOverLineY - 1 }, 
-            { x: gameWidth, y: gameOverLineY - 1 },
-            { x: gameWidth, y: gameOverLineY + 1 },
+            { x: CANVAS_WIDTH, y: gameOverLineY - 1 },
+            { x: CANVAS_WIDTH, y: gameOverLineY + 1 },
             { x: 0, y: gameOverLineY + 1 }
         ]);
 
-        // 캔버스 및 사이드 패널 위치 계산
-        const canvasMarginLeft = (window.innerWidth - gameWidth) / 2;
+        const canvasMarginLeft = Math.max(0, (window.innerWidth - CANVAS_WIDTH) / 2);
         render.canvas.style.marginLeft = `${canvasMarginLeft}px`;
-        render.canvas.style.marginTop = `0px`;
-
-        const leftSpaceWidth = canvasMarginLeft;
-        const panelWidth = 190; // CSS에서 190px로 설정함
-
-        if (leftPanel) {
-            const leftPanelPosition = (leftSpaceWidth / 2) - (panelWidth / 2);
-            leftPanel.style.left = `${leftPanelPosition}px`;
-        }
-        if (rightPanel) {
-            const rightPanelPosition = (leftSpaceWidth / 2) - (panelWidth / 2);
-            rightPanel.style.right = `${rightPanelPosition}px`;
-        }
+        // score 요소 높이만큼 아래로 내림 (겹침 방지).
+        const scoreEl = document.getElementById('score');
+        const topOffset = scoreEl ? (scoreEl.offsetHeight + 50) : 60;
+        render.canvas.style.marginTop = `${topOffset}px`;
     }
 
     // [수정] drawLevelingGuide 함수 (이미지 사용)
@@ -491,7 +557,7 @@ function initializeGame() {
         let guideHTML = '<h3>레벨 가이드</h3>'; // <h3> 타이틀 유지
 
         ballTypes.forEach((type, index) => {
-            const displaySize = 10 + (index * 2); // 레벨 기준 고정 크기
+            const displaySize = 16 + (index * 4); // 레벨 기준 고정 크기
             
             // 이미지 경로에 따라 스타일 분기
             let ballStyle = '';
@@ -506,7 +572,7 @@ function initializeGame() {
             guideHTML += `
                 <div class="guide-item">
                     <div class="guide-ball" style="width:${displaySize}px; height:${displaySize}px; ${ballStyle}"></div>
-                    <span>Lv.${index + 1}</span>
+                    <span style="font-size:14px;">Lv.${index + 1}</span>
                 </div>
             `;
             

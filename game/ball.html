@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>수박 게임 (이미지 적용 버전)</title>
+<title>고래 게임</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -76,6 +76,30 @@
         animation: fadeIn 0.6s ease-out;
     }
 
+    #leftPanel {
+        position: absolute;
+        width: 190px;
+        top: 20px;
+        left: 20px;
+        display: none;
+        flex-direction: column;
+        gap: 20px;
+        z-index: 10;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    #rightPanel {
+        position: absolute;
+        width: 190px;
+        top: 20px;
+        right: 20px;
+        display: none;
+        flex-direction: column;
+        gap: 20px;
+        z-index: 10;
+        animation: fadeIn 0.6s ease-out;
+    }
+
 /* --- 4. 패널 공통 스타일 (글래스모피즘) --- */
     .panel-box {
         background: rgba(255, 255, 255, 0.35);
@@ -106,7 +130,6 @@
         border: 1px solid rgba(0,0,0,0.1); 
         margin-right: 10px; 
         box-shadow: inset 0 -1px 2px rgba(0,0,0,0.1);
-        /* [수정] 이미지를 표시하기 위해 배경 설정 */
         background-size: cover;
         background-position: center;
     }
@@ -146,7 +169,8 @@
         color: white;
         padding: 40px 60px;
         border-radius: 20px;
-        display: none; flex-direction: column;
+        display: none;
+        flex-direction: column;
         align-items: center; z-index: 100;
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
@@ -182,7 +206,7 @@
 <body>
 
 <div id="mainMenu">
-    <h1>수박 게임</h1>
+    <h1>고래 게임</h1>
     <button id="startButton" class="menu-button">게임 시작</button>
 </div>
 
@@ -190,17 +214,11 @@
     <div id="levelGuide" class="panel-box">
         <h3>레벨 가이드</h3>
     </div>
-    <div id="howToPlay" class="panel-box">
-        <h3>게임 방법</h3>
-        <p>1. 마우스로 위치를 정하고 클릭!</p>
-        <p>2. 같은 공이 만나면 합체!</p>
-        <p>3. 빨간 선을 넘으면 게임 오버!</p>
-    </div>
 </div>
 
 <div id="rightPanel">
     <div id="nextBallDisplay" class="panel-box">
-        <h3>다음 공</h3>
+        <h3>다음</h3>
         <canvas id="nextBallCanvas" width="50" height="50"></canvas>
     </div>
     <div id="highScorePanel" class="panel-box">
@@ -208,6 +226,13 @@
         <p id="highScoreDisplay">0</p>
     </div>
     <button id="quitButton">그만하기</button>
+
+    <div id="howToPlay" class="panel-box" style="margin-top:10px;">
+        <h3>게임 방법</h3>
+        <p>1. 마우스로 위치를 정하고 클릭!</p>
+        <p>2. 같은 공이 만나면 합체!</p>
+        <p>3. 빨간 선을 넘으면 게임 오버!</p>
+    </div>
 </div>
 
 
@@ -217,9 +242,8 @@
 </div>
 <div id="score">점수: 0</div>
 <canvas id="gameCanvas"></canvas>
-<canvas id="gameCanvas"></canvas>
 
-<audio id="backgroundMusic" src="Teddy Bear Waltz.mp3" loop></audio>
+<audio id="backgroundMusic" src="./sound/Teddy Bear Waltz.mp3" loop></audio>
 <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
 <script src="js/game.js"></script> 
 </body>
