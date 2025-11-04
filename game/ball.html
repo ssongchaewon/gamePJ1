@@ -2,12 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Suika Game Prototype</title>
+<title>수박 게임 (이미지 적용 버전)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-...
 /* --- 1. 기본 및 애니메이션 설정 --- */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
@@ -22,20 +21,17 @@
     body { 
         margin: 0; 
         overflow: hidden; 
-        /* [변경] 하늘색 그라데이션 배경 */
         background: linear-gradient(170deg, #b0e0e6 0%, #dbefff 100%);
         height: 100vh;
         color: #333; 
-        /* [변경] 세련된 폰트 적용 */
         font-family: 'Poppins', sans-serif; 
     }
     
-    /* --- 2. 메인 메뉴 (인트로) --- */
+/* --- 2. 메인 메뉴 (인트로) --- */
     #mainMenu {
         position: absolute; width: 100%; height: 100%;
         display: flex; flex-direction: column;
         justify-content: center; align-items: center;
-        /* [변경] 글래스모피즘 배경 */
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
         z-index: 200;
@@ -43,113 +39,81 @@
     }
     #mainMenu h1 { 
         font-size: 7vw; 
-        color: #fff; /* 흰색으로 변경 */
+        color: #fff;
         font-weight: 700;
         margin-bottom: 40px; 
-        /* [추가] 고급스러운 텍스트 그림자 */
         text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
     .menu-button {
         font-size: 24px; padding: 15px 30px; border: none;
-        border-radius: 15px; /* 좀 더 둥글게 */
+        border-radius: 15px;
         cursor: pointer;
-        background: #4A90E2; /* 세련된 파란색 */
+        background: #4A90E2;
         color: white; 
-        font-weight: 600; /* 폰트 굵기 */
+        font-weight: 600;
         transition: transform 0.2s, box-shadow 0.2s;
-        margin-bottom: 20px; width: 220px; /* 살짝 넓게 */
+        margin-bottom: 20px; width: 220px;
         text-align: center;
-        /* [추가] 부드러운 그림자 */
         box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
     }
     .menu-button:hover { 
         transform: scale(1.05) translateY(-2px); 
         box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
     }
-    /* [추가] 시작 버튼에만 '두근거림' 애니메이션 적용 */
     #startButton {
         animation: pulse 2s infinite ease-in-out;
     }
 
-    /* --- 3. 좌/우 사이드 패널 (메뉴) --- */
+/* --- 3. 좌/우 사이드 패널 (메뉴) --- */
     #leftPanel, #rightPanel {
         position: absolute;
-        width: 190px; /* 살짝 넓게 */
+        width: 190px;
         top: 20px;
         display: none; 
         flex-direction: column;
         gap: 20px; 
         z-index: 10;
-        /* [추가] 패널 등장 애니메이션 */
         animation: fadeIn 0.6s ease-out;
     }
 
-    /* --- 4. 패널 공통 스타일 (글래스모피즘) --- */
+/* --- 4. 패널 공통 스타일 (글래스모피즘) --- */
     .panel-box {
-        /* [변경] 글래스모피즘 스타일 */
         background: rgba(255, 255, 255, 0.35);
         backdrop-filter: blur(8px);
-        padding: 15px 20px; /* 패딩 조정 */
+        padding: 15px 20px;
         border-radius: 15px;
-        color: #1a3b5a; /* 짙은 파랑 계열 글씨 */
-        /* [추가] 유리 테두리 느낌 */
+        color: #1a3b5a;
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .panel-box h3 {
         margin: 0 0 10px 0;
-        color: #0056b3; /* 포인트 컬러 (진한 파랑) */
+        color: #0056b3;
         border-bottom: 1px solid rgba(0, 86, 179, 0.2);
         padding-bottom: 8px;
         font-weight: 600;
     }
 
-    /* '게임 방법' (왼쪽 패널) */
-    #howToPlay p {
-        margin: 5px 0 0 0;
-        font-size: 13px;
-        line-height: 1.5;
-        color: #333;
-    }
+    #howToPlay p { margin: 5px 0 0 0; font-size: 13px; line-height: 1.5; color: #333; }
+    #highScoreDisplay { font-size: 36px; text-align: center; color: #0056b3; font-weight: 700; margin: 10px 0; }
+    #nextBallDisplay { font-size: 20px; text-align: center; }
+    #nextBallCanvas { background: rgba(255,255,255,0.3); border-radius: 50%; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.2); }
 
-    /* '최고 점수' (오른쪽 패널) */
-    #highScoreDisplay {
-        font-size: 36px; /* 크기 강조 */
-        text-align: center;
-        color: #0056b3;
-        font-weight: 700;
-        margin: 10px 0;
-    }
-
-    /* '다음 공' (오른쪽 패널) */
-    #nextBallDisplay {
-        font-size: 20px; 
-        text-align: center;
-    }
-    #nextBallCanvas {
-        background: rgba(255,255,255,0.3); 
-        border-radius: 50%;
-        margin-top: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    /* '레벨 가이드' (왼쪽 패널) */
+/* '레벨 가이드' (왼쪽 패널) */
     .guide-item { display: flex; align-items: center; margin-bottom: 5px; }
     .guide-ball { 
         border-radius: 50%; 
         border: 1px solid rgba(0,0,0,0.1); 
         margin-right: 10px; 
-        box-shadow: inset 0 -1px 2px rgba(0,0,0,0.1); /* [추가] 공 입체감 */
+        box-shadow: inset 0 -1px 2px rgba(0,0,0,0.1);
+        /* [수정] 이미지를 표시하기 위해 배경 설정 */
+        background-size: cover;
+        background-position: center;
     }
-    .guide-arrow { 
-        font-size: 16px; 
-        color: #777; /* 화살표 색상 */
-        margin: 0; 
-        text-align: center;
-    }
+    .guide-arrow { font-size: 16px; color: #777; margin: 0; text-align: center; }
 
 
-    /* --- 5. 게임 UI 요소들 (점수, 캔버스) --- */
+/* --- 5. 게임 UI 요소들 (점수, 캔버스) --- */
     #score { 
         position: absolute; top: 20px; left: 50%; 
         transform: translateX(-50%);
@@ -158,7 +122,6 @@
         display: none; 
         color: #fff; 
         font-weight: 700;
-        /* [변경] 점수판 스타일 */
         background: rgba(74, 144, 226, 0.8);
         padding: 8px 25px;
         border-radius: 20px;
@@ -167,71 +130,54 @@
         animation: fadeIn 0.6s ease-out;
     }
     #gameCanvas {
-        /* [변경] 캔버스 테두리 및 그림자 */
-        border: 2px solid #ffffff; /* 깔끔한 흰색 테두리 */
+        border: 2px solid #ffffff;
         display: none; 
         margin: 0 auto;
-        border-radius: 8px; /* [추가] 살짝 둥근 모서리 */
-        /* [추가] 캔버스가 떠있는 느낌 */
+        border-radius: 8px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+        /* [수정] 캔버스 배경은 JS에서 제어하므로 CSS 배경 제거 */
     }
     
-    /* --- 6. 게임 오버 화면 --- */
+/* --- 6. 게임 오버 화면 --- */
     #gameOverScreen {
         position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        /* [변경] 글래스모피즘 (어두운 버전) */
-        background: rgba(26, 59, 90, 0.6); /* 짙은 파랑 투명 */
+        background: rgba(26, 59, 90, 0.6);
         backdrop-filter: blur(10px);
         color: white;
-        padding: 40px 60px; /* 패딩 확장 */
+        padding: 40px 60px;
         border-radius: 20px;
         display: none; flex-direction: column;
         align-items: center; z-index: 100;
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        /* [추가] 애니메이션 */
         animation: fadeIn 0.4s ease;
     }
-    #gameOverScreen h1 { 
-        margin: 0 0 20px 0; 
-        font-size: 48px; /* 크기 강조 */
-        font-weight: 700;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    }
+    #gameOverScreen h1 { margin: 0 0 20px 0; font-size: 48px; font-weight: 700; text-shadow: 0 2px 5px rgba(0,0,0,0.3); }
     #restartButton {
         font-size: 22px; padding: 12px 25px; border: none;
         border-radius: 10px; cursor: pointer;
-        background: #4A90E2; /* 통일된 파란색 */
+        background: #4A90E2;
         color: white; 
         font-weight: 600;
         transition: transform 0.2s, box-shadow 0.2s;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
-    #restartButton:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
-    }
+    #restartButton:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4); }
 
-    /* --- 7. '그만하기' 버튼 --- */
+/* --- 7. '그만하기' 버튼 --- */
     #quitButton {
-        font-size: 16px;
-        padding: 10px;
-        border: none;
-        border-radius: 10px; /* 통일성 */
-        cursor: pointer;
-        background-color: #E74C3C; /* 좀 더 세련된 빨강 */
-        color: white;
-        font-weight: 600;
+        font-size: 16px; padding: 10px; border: none;
+        border-radius: 10px; cursor: pointer;
+        background-color: #E74C3C;
+        color: white; font-weight: 600;
         width: 100%; 
         box-sizing: border-box; 
         margin-top: 15px; 
         transition: background-color 0.2s, transform 0.2s;
         box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
     }
-    #quitButton:hover {
-        background-color: #C0392B; /* 더 진한 빨강 */
-        transform: translateY(-1px);
-    }</style>
+    #quitButton:hover { background-color: #C0392B; transform: translateY(-1px); }
+</style>
 </head>
 <body>
 
@@ -243,7 +189,7 @@
 <div id="leftPanel">
     <div id="levelGuide" class="panel-box">
         <h3>레벨 가이드</h3>
-        </div>
+    </div>
     <div id="howToPlay" class="panel-box">
         <h3>게임 방법</h3>
         <p>1. 마우스로 위치를 정하고 클릭!</p>
@@ -261,7 +207,6 @@
         <h3>최고 점수</h3>
         <p id="highScoreDisplay">0</p>
     </div>
-
     <button id="quitButton">그만하기</button>
 </div>
 
@@ -272,13 +217,9 @@
 </div>
 <div id="score">점수: 0</div>
 <canvas id="gameCanvas"></canvas>
-
-<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
-<script src="js/game.js"></script> 
 <canvas id="gameCanvas"></canvas>
 
-<audio id="bgm" src="Teddy Bear Waltz.mp3" loop></audio>
-
+<audio id="backgroundMusic" src="Teddy Bear Waltz.mp3" loop></audio>
 <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
 <script src="js/game.js"></script> 
 </body>
