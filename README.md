@@ -7,7 +7,8 @@
 ## 🎮 게임 시작하기
 
 아래 버튼을 눌러 바로 게임을 플레이하세요 👇  
-👉 [**고래 게임 실행하기**](./game/ball.html)
+👉 [**고래 게임 실행하기**](https://ssongchaewon.github.io/gamePJ1/game/ball.html)
+
 
 ---
 
