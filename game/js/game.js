@@ -7,6 +7,7 @@ const leftPanel = document.getElementById('leftPanel');
 const rightPanel = document.getElementById('rightPanel');
 const highScoreDisplay = document.getElementById('highScoreDisplay');
 
+const whaleInfoPanel = document.getElementById('whaleInfoPanel');
 
 // --- 2. 메인 메뉴 이벤트 리스너 ---
 
@@ -59,6 +60,8 @@ function initializeGame() {
     leftPanel.style.display = 'flex';
     rightPanel.style.display = 'flex';
     
+    whaleInfoPanel.style.display = 'flex';
+
     // 게임 시작 시 최고 점수 불러오기
     loadHighScore();
 
@@ -86,10 +89,10 @@ function initializeGame() {
     let isGameOver = false; 
 
     const ballTypes = [
-        { radius: 15,  imgPath: 'image/Bubble.png',   color: '#FFDDC1' }, // Lv 1
-        { radius: 30,  imgPath: 'image/SeaUrchin.png',       color: '#FFD700' }, // Lv 2
-        { radius: 40,  imgPath: 'image/StarFish.png',       color: '#FFA500' }, // Lv 3
-        { radius: 55,  imgPath: 'image/ShellFish.png',     color: '#40E0D0' }, // Lv 4
+        { radius: 15,  imgPath: 'image/Bubble.png',   color: '#d6eef5' }, // Lv 1
+        { radius: 30,  imgPath: 'image/SeaUrchin.png',       color: '#d6eef5' }, // Lv 2
+        { radius: 40,  imgPath: 'image/StarFish.png',       color: '#d6eef5' }, // Lv 3
+        { radius: 55,  imgPath: 'image/ShellFish.png',     color: '#FFFFFF' }, // Lv 4
         { radius: 70,  imgPath: 'image/JellyFish.png',     color: '#DA70D6' }, // Lv 5
         { radius: 80,  imgPath: 'image/Nemo.png',   color: '#FF6347' }, // Lv 6
         { radius: 90,  imgPath: 'image/Shrimp.png',   color: '#DC143C' }, // Lv 7
@@ -159,14 +162,14 @@ function initializeGame() {
     nextBallCanvas.height = 80;
 
     // --- 벽, 바닥, 게임오버 라인 생성 ---
-    const ground = Bodies.rectangle(gameWidth / 2, gameHeight - wallThickness / 2, gameWidth, wallThickness, { isStatic: true, label: 'wall', render: { fillStyle: '#666' } });
-    const leftWall = Bodies.rectangle(wallThickness / 2, gameHeight / 2, wallThickness, gameHeight, { isStatic: true, label: 'wall', render: { fillStyle: '#666' } });
-    const rightWall = Bodies.rectangle(gameWidth - wallThickness / 2, gameHeight / 2, wallThickness, gameHeight, { isStatic: true, label: 'wall', render: { fillStyle: '#666' } });
+    const ground = Bodies.rectangle(gameWidth / 2, gameHeight - wallThickness / 2, gameWidth, wallThickness, { isStatic: true, label: 'wall', render: { fillStyle: '#003167' } });
+    const leftWall = Bodies.rectangle(wallThickness / 2, gameHeight / 2, wallThickness, gameHeight, { isStatic: true, label: 'wall', render: { fillStyle: '#003167' } });
+    const rightWall = Bodies.rectangle(gameWidth - wallThickness / 2, gameHeight / 2, wallThickness, gameHeight, { isStatic: true, label: 'wall', render: { fillStyle: '#003167' } });
     const gameOverLine = Bodies.rectangle(gameWidth / 2, gameOverLineY, gameWidth, 2, {
         isStatic: true,
         isSensor: true, 
         label: 'gameOverLine',
-        render: { fillStyle: '#FF0000' }
+        render: { fillStyle: '#00b0b3' }
     });
 
     Composite.add(world, [ground, leftWall, rightWall, gameOverLine]); 
@@ -177,22 +180,21 @@ function initializeGame() {
     gameOverSound.volume = 0.9;
 
     function gameOver() {
-        if (isGameOver) return; // 중복 실행 방지
-        isGameOver = true;
-
-        // 게임오버 사운드 재생 (브라우저 정책으로 실패할 수 있으므로 try/catch)
-        try { gameOverSound.currentTime = 0; gameOverSound.play(); } catch (e) { /* ignore play errors */ }
-
-        Runner.stop(runner); // 엔진 정지
+    	if (isGameOver) return; 
+    	isGameOver = true;
+    	Runner.stop(runner); 
         
-        saveHighScore(score); // 게임 오버 시 최고 점수 저장 시도
+    saveHighScore(score); 
 
-        document.getElementById('gameOverScreen').style.display = 'flex'; // 게임오버 화면 표시
-        if (currentDroppingBall) {
-            Composite.remove(world, currentDroppingBall); // 미리보기 공 제거
-        }
+    // [수정] display 대신 opacity와 visibility를 변경
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    gameOverScreen.style.opacity = '1';
+    gameOverScreen.style.visibility = 'visible';
+    
+    if (currentDroppingBall) {
+        Composite.remove(world, currentDroppingBall); 
+    	}
     }
-
     // [수정] Render.run(render); // <-- 이 줄을 "삭제" 합니다.
     const runner = Runner.create(); 
     Runner.run(runner, engine); // 물리 계산은 계속 실행
@@ -260,13 +262,31 @@ function initializeGame() {
             }
         });
 
-        // 3. 게임 오버 라인 그리기
-        ctx.beginPath();
-        ctx.moveTo(gameOverLine.vertices[0].x, gameOverLine.vertices[0].y);
-        ctx.lineTo(gameOverLine.vertices[1].x, gameOverLine.vertices[1].y);
-        ctx.strokeStyle = gameOverLine.render.fillStyle;
-        ctx.lineWidth = 2;
-        ctx.stroke();
+      // 3. 게임 오버 라인 그리기 (물결)
+      ctx.strokeStyle = gameOverLine.render.fillStyle; // 기존 색상 (빨간색)
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+
+      const amplitude = 4; // 물결 높이 (위아래로 4px씩)
+      const wavelength = 50; // 물결 길이 (50px 마다 1번 출렁)
+      const yOffset = gameOverLineY; // 선의 중심 Y좌표
+      
+      // 시간에 따라 물결이 움직이도록 (애니메이션)
+      // engine.timing.timestamp 값을 사용합니다
+      const phase = (engine.timing.timestamp / 400); // 이 숫자로 속도 조절 (숫자가 클수록 느림)
+
+      // 0px 부터 gameWidth 까지 1px 단위로 선을 그림
+      for (let x = 0; x <= gameWidth; x++) {
+          // Sine 함수로 y좌표 계산
+          const y = amplitude * Math.sin( (x / wavelength) * (2 * Math.PI) - phase ) + yOffset;
+          
+          if (x === 0) {
+              ctx.moveTo(x, y); // 첫 번째 점은 moveTo
+          } else {
+              ctx.lineTo(x, y); // 이후는 lineTo
+          }
+      }
+      ctx.stroke();
 
         // 4. 떨어지는 공들(Dynamic bodies) 그리기
         bodies.forEach(body => {
@@ -326,37 +346,6 @@ function initializeGame() {
     function getRandomBallType() {
         const randomIndex = Math.floor(Math.random() * 3); // 0, 1, 2 레벨만
         return ballTypes[randomIndex];
-    }
-
-    // [수정] drawNextBallPreview 함수
-    function drawNextBallPreview(type) {
-        nextBallCtx.clearRect(0, 0, nextBallCanvas.width, nextBallCanvas.height);
-
-        const cx = nextBallCanvas.width / 2;
-        const cy = nextBallCanvas.height / 2;
-
-        const IMG_W = 30;
-        const IMG_H = 30;
-        const borderRadius = Math.min(nextBallCanvas.width, nextBallCanvas.height) * 0.45;
-
-        if (type.image && type.imageLoaded) {
-            // 원형 마스크 제거 — 항상 고정 크기(30x30)로 중앙에 그림
-            nextBallCtx.drawImage(type.image, cx - IMG_W / 2, cy - IMG_H / 2, IMG_W, IMG_H);
-        } else {
-            // 로드되지 않았으면 단색 원으로 대체
-            const r = Math.min(IMG_W / 2, borderRadius);
-            nextBallCtx.fillStyle = type.color;
-            nextBallCtx.beginPath();
-            nextBallCtx.arc(cx, cy, r, 0, Math.PI * 2);
-            nextBallCtx.fill();
-        }
-
-        // 항상 테두리 그리기 (일관된 크기)
-        nextBallCtx.beginPath();
-        nextBallCtx.arc(cx, cy, borderRadius, 0, Math.PI * 2);
-        nextBallCtx.strokeStyle = 'white';
-        nextBallCtx.lineWidth = 1;
-        nextBallCtx.stroke();
     }
 
     // [수정] updatePreviewBall 함수
