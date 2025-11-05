@@ -5,14 +5,15 @@
 
 ---
 
-![고래 게임 스크린샷](./game/mdimage/sample.png)  
-> 💡 *게임 메인 화면 예시 – 같은 해산물을 합쳐 더 큰 해산물을 만들어보세요!*
-
----
-
 ## 🎮 플레이하기
 
 👉 [**고래 게임 실행하기**](https://ssongchaewon.github.io/gamePJ1/game/ball.html)
+
+---
+
+![고래 게임 스크린샷](./game/mdimage/sample.png)  
+> 💡 *게임 메인 화면 예시 – 같은 해산물을 합쳐 더 큰 해산물을 만들어보세요!*
+
 
 ---
 
