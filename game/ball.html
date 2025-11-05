@@ -187,7 +187,6 @@
         transform: translateX(-50%);
         font-size: 28px; 
         z-index: 10; 
-        display: none; 
         color: #fff; 
         font-weight: 700;
         background: rgba(74, 144, 226, 0.8);
@@ -196,6 +195,11 @@
         box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
         animation: fadeIn 0.6s ease-out;
+
+        /*중앙에 있지만 안보임*/
+        display: flex; 
+        opacity: 0;    
+        visibility: hidden; 
     }
     #gameCanvas {
         border: 2px solid #ffffff;

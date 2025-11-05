@@ -54,7 +54,9 @@ function initializeGame() {
     
     // 게임 UI 요소들 보이기
     document.getElementById('gameCanvas').style.display = 'block';
-    document.getElementById('score').style.display = 'block';
+    const gameScore = document.getElementById('score');
+    gameScore.style.opacity = '1';
+    gameScore.style.visibility = 'visible';
     
     // 사이드 패널 보이기 (display: flex)
     leftPanel.style.display = 'flex';
@@ -182,7 +184,11 @@ function initializeGame() {
     function gameOver() {
     	if (isGameOver) return; 
     	isGameOver = true;
-    	Runner.stop(runner); 
+
+        // 게임오버 사운드 재생
+        try { gameOverSound.currentTime = 0; gameOverSound.play(); } catch (e) { /* ignore play errors */ }
+
+        Runner.stop(runner); 
         
     saveHighScore(score); 
 
