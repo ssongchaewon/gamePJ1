@@ -5,7 +5,7 @@
 
 ---
 
-![고래 게임 스크린샷](./game/image/screenshot.png)  
+![고래 게임 스크린샷](./game/mdimage/sample.png)  
 > 💡 *게임 메인 화면 예시 – 같은 해산물을 합쳐 더 큰 해산물을 만들어보세요!*
 
 ---
