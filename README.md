@@ -34,7 +34,6 @@
 > (UI 설계, 물리엔진 적용, 문제 해결 과정 포함)
 
 🎞️ [**제작 과정 PPT 보기**](https://your-ppt-link.com)  
-*(예: Google Slides, Notion, or PowerPoint Online 링크로 연결)*
 
 ---
 
@@ -44,10 +43,3 @@
 - **Matter.js (Physics Engine)**
 - **HTML5 Canvas**
 - **CSS3 (Flex / Animation)**
-
----
-
-## 🧑‍💻 제작자
-
-**송채원**  
-📧 contact: [your-email@example.com](mailto:your-email@example.com)
