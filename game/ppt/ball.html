@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Matter.js 예제 (HTML 단일 파일)</title>
+  
+  <style>
+    body {
+      /* 회색 배경 */
+      background-color: #808080; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden; /* 스크롤바 숨기기 */
+    }
+    
+    #game-container {
+      position: relative;
+      /* 캔버스와 점수 텍스트를 묶는 컨테이너 */
+    }
+
+    #score {
+      /* 이미지와 같이 상단 좌측에 위치 */
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px;
+      font-family: sans-serif;
+      color: black;
+      z-index: 10; /* 캔버스 위에 표시 */
+    }
+    
+    canvas {
+      /* 하얀색 실행 상자 */
+      background-color: #ffffff; 
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="game-container">
+    <div id="score">점수: 80</div>
+
+    </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  
+  <script>
+    // Matter.js 모듈 별칭 만들기
+    var Engine = Matter.Engine,
+        Render = Matter.Render,
+        Runner = Matter.Runner,
+        Bodies = Matter.Bodies,
+        Composite = Matter.Composite;
+
+    // 1. 물리 엔진 생성
+    var engine = Engine.create();
+    var world = engine.world;
+
+    // 2. 렌더러 생성
+    // 이미지의 하얀 상자 크기 (너비 400, 높이 700 정도로 가정)
+    const canvasWidth = 400;
+    const canvasHeight = 700;
+
+    var render = Render.create({
+        element: document.getElementById('game-container'), // HTML의 컨테이너 ID
+        engine: engine,
+        options: {
+            width: canvasWidth,
+            height: canvasHeight,
+            wireframes: false, // false여야 색상이 보임
+            background: '#ffffff' // 캔버스 배경 (하얀색)
+        }
+    });
+
+    // 3. 벽(Boundaries) 생성 - 하얀 상자의 테두리
+    var walls = [
+        // 바닥 (x, y, width, height, options)
+        Bodies.rectangle(canvasWidth / 2, canvasHeight, canvasWidth, 40, { isStatic: true }),
+        // 왼쪽 벽
+        Bodies.rectangle(0, canvasHeight / 2, 40, canvasHeight, { isStatic: true }),
+        // 오른쪽 벽
+        Bodies.rectangle(canvasWidth, canvasHeight / 2, 40, canvasHeight, { isStatic: true }),
+    ];
+
+    // 생성한 벽을 world에 추가
+    Composite.add(world, walls);
+
+
+    // 4. 이미지 속 공들 생성하기
+    // 공의 반지름 (임의 설정)
+    const radius = 20;
+
+    // 공의 렌더링 옵션 (색상 및 테두리)
+    const orange = { render: { fillStyle: '#FFA500', strokeStyle: 'black', lineWidth: 2 } };
+    const red = { render: { fillStyle: '#FF4500', strokeStyle: 'black', lineWidth: 2 } };
+    const green = { render: { fillStyle: '#90EE90', strokeStyle: 'black', lineWidth: 2 } };
+
+    // 이미지와 유사한 위치에 공들을 생성 (약간 위에서 떨어뜨려 자연스럽게 쌓이게 함)
+    var balls = [
+        // 왼쪽 3개 (x, y, radius, options)
+        Bodies.circle(100, 100, radius, orange),
+        Bodies.circle(140, 150, radius, red),
+        Bodies.circle(180, 100, radius, orange),
+
+        // 오른쪽 초록/빨강 스택
+        Bodies.circle(280, 150, radius, red),   // 아래 빨강
+        Bodies.circle(280, 100, radius, green), // 위 초록
+
+        // 오른쪽 옆 초록
+        Bodies.circle(240, 100, radius, green)
+    ];
+
+    // 생성한 공들을 world에 추가
+    Composite.add(world, balls);
+
+    // 5. 엔진 및 렌더러 실행
+    var runner = Runner.create(); // 엔진을 계속 실행
+    Runner.run(runner, engine);
+
+    Render.run(render); // 렌더러 실행
+  </script>
+
+</body>
+</html>
