@@ -33,7 +33,7 @@
 > 게임 기획부터 구현까지의 과정을 정리한 발표 자료입니다.  
 > (UI 설계, 물리엔진 적용, 문제 해결 과정 포함)
 
-🎞️ [**제작 과정 PPT 보기**](https://ssongchaewon.github.io/gamePJ1/game/ppt/웹 수박게임 구현.pptx) 
+🎞️ [**제작 과정 PPT 보기**](https://github.com/ssongchaewon/gamePJ1/blob/main/game/ppt/%EC%9B%B9%20%EC%88%98%EB%B0%95%EA%B2%8C%EC%9E%84%20%EA%B5%AC%ED%98%84.pptx)
 
 👉 [**초기 코드 실행하기**](https://ssongchaewon.github.io/gamePJ1/game/ppt/ball.html) 
 
